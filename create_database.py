@@ -19,10 +19,6 @@ cur.execute('DROP TABLE IF EXISTS ways_tags')
 conn.commit()
 
 # Create the table, specifying the column names and data types
-
-# Add references???
-# Primary keys???
-
 cur.execute('''CREATE TABLE nodes(
                id INTEGER PRIMARY KEY, 
                lat REAL, 

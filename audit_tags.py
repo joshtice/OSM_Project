@@ -7,7 +7,9 @@ import re
 FILENAME = "Rochester.osm"
 
 
-######################### HELPER FUNCTIONS ########################
+##########################################################################################
+#                                   HELPER FUNCTIONS                                     #
+##########################################################################################
 
 def print_sorted_dict(d):
     '''Print key/value pairs from a dictionary, sorted by key'''
@@ -26,9 +28,7 @@ def iter_elements(filename=FILENAME, tags=('node', 'way', 'relation')):
         if event == 'end' and elem.tag in tags:
             yield elem
             root.clear()
-            
-
-########################## MAIN FUNCTIONS #########################
+    
             
 def aggregate_tag_keys(filename=FILENAME):
     '''Compile all the keys found in tag subelements'''
@@ -85,7 +85,7 @@ def aggregate_addr_tags(filename=FILENAME):
     
     
 def aggregate_street_abbrevs(filename=FILENAME):
-    '''Compile (almost) all abbreviations found in tags related to address'''
+    '''Compile abbreviations found in tags related to address'''
     
     streets = defaultdict(int)
     street_tag = re.compile(r'^(addr:street)\w*')
@@ -120,31 +120,39 @@ def aggregate_zips(filename=FILENAME):
     return zips    
     
 
-############################## OUTPUT ##############################
+##########################################################################################
+#                                     MAIN FUNCTION                                      #
+##########################################################################################
 
-keys = aggregate_tag_keys()
+def audit_osm_file(filename):
 
-print "#################### KEYS ####################\n"
-print "Total unique keys: ", len(keys)
-print_sorted_dict(keys)
+    keys = aggregate_tag_keys(filename)
 
-print "\n\n"
-print "############### KEY CATEGORIES ###############\n"
-print_sorted_dict(categorize_tags())
+    print "#################### KEYS ####################\n"
+    print "Total unique keys: ", len(keys)
+    print_sorted_dict(keys)
 
-print "\n\n"
-print "################ PROBLEM KEYS ################\n"
-print_sorted_dict(aggregate_problem_tags())
+    print "\n\n"
+    print "############### KEY CATEGORIES ###############\n"
+    print_sorted_dict(categorize_tags(filename))
 
-print "\n\n"
-print "########## KEYS RELATED TO ADDRESS ###########\n"
-print_sorted_dict(aggregate_addr_tags())
+    print "\n\n"
+    print "################ PROBLEM KEYS ################\n"
+    print_sorted_dict(aggregate_problem_tags(filename))
 
-print "\n\n"
-print "############ STREET ABBREVIATIONS ############\n"
-print_sorted_dict(aggregate_street_abbrevs())
+    print "\n\n"
+    print "########## KEYS RELATED TO ADDRESS ###########\n"
+    print_sorted_dict(aggregate_addr_tags(filename))
 
-print "\n\n"
-print "################# ZIP CODES ##################\n"
-print ""
-print_sorted_dict(aggregate_zips())
+    print "\n\n"
+    print "############ STREET ABBREVIATIONS ############\n"
+    print_sorted_dict(aggregate_street_abbrevs(filename))
+
+    print "\n\n"
+    print "################# ZIP CODES ##################\n"
+    print ""
+    print_sorted_dict(aggregate_zips(filename))
+
+
+if __name__ == '__main__':
+    audit_osm_file(FILENAME)

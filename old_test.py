@@ -19,27 +19,14 @@ PROBLEMCHARS = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
 
 SCHEMA = schema.schema
 
+# Make sure the fields order in the csvs matches the column order in the sql table schema
 NODE_FIELDS = ['id', 'lat', 'lon', 'user', 'uid', 'version', 'changeset', 'timestamp']
 NODE_TAGS_FIELDS = ['id', 'key', 'value', 'type']
 WAY_FIELDS = ['id', 'user', 'uid', 'version', 'changeset', 'timestamp']
 WAY_TAGS_FIELDS = ['id', 'key', 'value', 'type']
 WAY_NODES_FIELDS = ['id', 'node_id', 'position']
 
-##########################################################################################
-#                                   HELPER FUNCTIONS                                     #
-##########################################################################################
 
-def fix_prob_chars(key):
-    '''Eliminate problematic characters from keys'''
-    
-    if ' ' in key:
-        new_key = list(key)
-        for i, char in enumerate(new_key):
-            if char == ' ':
-                new_key[i] = '_'
-    new_key = ''.join(new_key)
-    return new_key
-            
 
 def fix_street_abbrevs(street):
     '''Expand abbreviations in street names'''
@@ -84,8 +71,7 @@ def fix_zipcode(zipcode):
 
 
 def shape_element(element, node_attr_fields=NODE_FIELDS, way_attr_fields=WAY_FIELDS,
-                  problem_chars=PROBLEMCHARS, lower_colon=LOWER_COLON, \
-                  default_tag_type='regular'):
+                  problem_chars=PROBLEMCHARS, lower_colon=LOWER_COLON, default_tag_type='regular'):
     """Clean and shape node or way XML element to Python dict"""
 
     node_attribs = {}
@@ -143,15 +129,10 @@ def shape_element(element, node_attr_fields=NODE_FIELDS, way_attr_fields=WAY_FIE
                 temp_attrib['position'] = i
                 way_nodes.append(temp_attrib)
                 i += 1
-	   
+   
     # Clean the element's tags
-    problem_chars = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
-    
+    '''
     for tag in tags:
-        
-        # Eliminate problematic characters in keys
-        if problem_chars.search(tag['key']):
-            tag['key'] = fix_prob_chars(tag['key'])
         
         # Expand abbreviations in address fields
         if (tag['key'] == 'address') or \
@@ -161,7 +142,12 @@ def shape_element(element, node_attr_fields=NODE_FIELDS, way_attr_fields=WAY_FIE
         # Replace invalid zipcodes with 'fixme'
         if (tag['key'] in ('zip_left', 'zip_right')) or \
            (tag['key'] == 'addr' and tag['type'] == 'postcode'):
-            tag['value'] = fix_zipcode(tag['value'])     
+            tag['value'] = fix_zipcode(tag['value'])
+    '''
+            
+        
+        
+    
     
     # Shape the element for integration into the database            
     if element.tag == 'node':
@@ -170,7 +156,9 @@ def shape_element(element, node_attr_fields=NODE_FIELDS, way_attr_fields=WAY_FIE
         return {'way': way_attribs, 'way_nodes': way_nodes, 'way_tags': tags}
 
 
-
+# ================================================== #
+#               Helper Functions                     #
+# ================================================== #
 def get_element(osm_file, tags=('node', 'way', 'relation')):
     """Yield element if it is the right type of tag"""
 
@@ -197,8 +185,7 @@ class UnicodeDictWriter(csv.DictWriter, object):
 
     def writerow(self, row):
         super(UnicodeDictWriter, self).writerow({
-            k: (v.encode('utf-8') if isinstance(v, unicode) else v) \
-            for k, v in row.iteritems()
+            k: (v.encode('utf-8') if isinstance(v, unicode) else v) for k, v in row.iteritems()
         })
 
     def writerows(self, rows):
@@ -206,10 +193,9 @@ class UnicodeDictWriter(csv.DictWriter, object):
             self.writerow(row)
 
 
-##########################################################################################
-#                                     MAIN FUNCTION                                      #
-##########################################################################################
-
+# ================================================== #
+#               Main Function                        #
+# ================================================== #
 def process_map(file_in, validate):
     """Iteratively process each XML element and write to csv(s)"""
 
@@ -235,9 +221,11 @@ def process_map(file_in, validate):
 
         for element in get_element(file_in, tags=('node', 'way')):
             el = shape_element(element)
+            #pprint.pprint(el)
             if el:
                 if validate is True:
                     validate_element(el, validator)
+
                 if element.tag == 'node':
                     nodes_writer.writerow(el['node'])
                     node_tags_writer.writerows(el['node_tags'])
@@ -245,8 +233,9 @@ def process_map(file_in, validate):
                     ways_writer.writerow(el['way'])
                     way_nodes_writer.writerows(el['way_nodes'])
                     way_tags_writer.writerows(el['way_tags'])
-            
 
 
 if __name__ == '__main__':
+    # Note: Validation is ~ 10X slower. For the project consider using a small
+    # sample of the map when validating.
     process_map(OSM_PATH, validate=True)
