@@ -18,7 +18,7 @@ def db_statistics(db=DB):
     cur = conn.cursor()
     
     # Count the number of unique users represented in the 'nodes' table
-    query = '''SELECT user, COUNT(user) AS num
+    query = '''SELECT user, COUNT(*) AS num
                FROM nodes
                GROUP BY user
                ORDER BY num DESC;'''
@@ -31,7 +31,7 @@ def db_statistics(db=DB):
         print "%s: %d" % (user, contribs)
         
     # Count the number of unique users represented in the 'ways' table
-    query = '''SELECT user, COUNT(user) AS num
+    query = '''SELECT user, COUNT(*) AS num
                FROM ways
                GROUP BY user
                ORDER BY num DESC;'''
@@ -152,7 +152,8 @@ def distribution_way_nodes(db=DB):
     cur.execute(query)
     results = cur.fetchall()
     results = [result[0] for result in results]
-    plt.hist(results)
+    plt.figure(figsize=(5,4))
+    plt.hist(results, alpha=0.5)
     plt.title('Distribution of Number of Nodes per Way')
     plt.xlabel('Number of nodes')
     plt.ylabel('Frequency')
@@ -183,48 +184,21 @@ def describe_large_ways(db=DB):
     print "way id\t\tcount\tkey\tvalue\ttype"
     for (id, num, key, value, type) in results:
         print "%d\t%d\t%s\t%s\t%s" % (id, num, key, value, type)  
-        
-        
-def scan_tags(db=DB):
-    ''' Compile tags and look for interesting ones to characterize'''
-    
-    conn = sqlite3.connect(db)
-    cur = conn.cursor()
-    
-    query = '''SELECT COUNT(*)
-               FROM nodes_tags
-               WHERE value='school'OR value='School';'''
-    cur.execute(query)
-    results = cur.fetchall()
-    if results:
-        pprint(results)
-    else:
-        print "None"
-        
-    query = '''SELECT COUNT(*)
-               FROM ways_tags
-               WHERE value='school' OR value='School';'''
-    cur.execute(query)
-    results = cur.fetchall()
-    if results:
-        pprint(results)
-    else:
-        print "None" 
-        
-    '''
-    if results:
-        print "The database contains %d restaurants in the nodes table." % results[0]
-    else:
-        print "The database does not contain any restaurants in the nodes table."
-    '''        
 					   
 
 ##########################################################################################
 #                                     MAIN FUNCTION                                      #
 ##########################################################################################
+
+def run_all_queries(db=DB):
+    db_statistics(db)
+    distribution_way_nodes(db)
+    describe_large_ways(db)
+
+
+
+
 if __name__ == '__main__':			   
-    db_statistics()
-    #distribution_way_nodes()
-    #describe_large_ways(DB)
-    #scan_tags(DB)
+    run_all_queries(DB)
+    
            
