@@ -17,17 +17,28 @@ def db_statistics(db=DB):
     conn = sqlite3.connect(db)
     cur = conn.cursor()
     
+    # Count the number of unique users in the entire OSM file
+    query = '''SELECT COUNT(DISTINCT(subquery.uid))
+               FROM
+                   (SELECT uid FROM nodes
+                    UNION ALL
+                    SELECT uid FROM ways)
+               AS subquery;'''
+    cur.execute(query)
+    results = cur.fetchall()
+    print "The number of unique users in the database is: %d" % results[0]
+    
     # Count the number of unique users represented in the 'nodes' table
     query = '''SELECT user, COUNT(*) AS num
                FROM nodes
                GROUP BY user
                ORDER BY num DESC;'''
     cur.execute(query)
-    node_users = cur.fetchall()
+    results = cur.fetchall()
     print "################# USER SUMMARY - NODES ##################"
-    print "Number of unique users in the 'node' table: %d" % len(node_users)
+    print "Number of unique users in the 'node' table: %d" % len(results)
     print "User / Number of contributions"
-    for user, contribs in node_users:
+    for user, contribs in results:
         print "%s: %d" % (user, contribs)
         
     # Count the number of unique users represented in the 'ways' table
@@ -36,25 +47,19 @@ def db_statistics(db=DB):
                GROUP BY user
                ORDER BY num DESC;'''
     cur.execute(query)
-    way_users = cur.fetchall()
+    results = cur.fetchall()
     print "################# USER SUMMARY - WAYS ###################"
-    print "Number of unique users in the 'way' table: %d" % len(way_users)
+    print "Number of unique users in the 'way' table: %d" % len(results)
     print "User / Number of contributions"
-    for user, contribs in way_users:
+    for user, contribs in results:
         print "%s: %d" % (user, contribs)
-        
-    # Count the number of unique users in the entire OSM file
-    set_unique_users = set(i for (i, _) in node_users)
-    set_unique_users.update(set(i for (i, _) in way_users))
-    num_unique_users = len(set_unique_users)
-    print "################# GENERAL STATISTICS ###################"
-    print "The total number of unique users in the OSM file is %d" % num_unique_users
     
     # Count the total number of nodes
     query = '''SELECT COUNT(*)
 			   FROM nodes;'''
     cur.execute(query)
     results = cur.fetchall()
+    print "################# OTHER DB STATISTICS ###################"
     print "The database contains %d nodes." % results[0]
     
     # Count the total number of ways
@@ -65,9 +70,9 @@ def db_statistics(db=DB):
     print "The database contains %d ways." % results[0]
 
     # Count the number of restaurant nodes
-    query = '''SELECT COUNT(id)
+    query = '''SELECT COUNT(*)
                FROM nodes_tags
-               WHERE value='restaurant' OR value='Restaurant'
+               WHERE value LIKE "%restaurant%"
                GROUP BY id
                ;'''
     cur.execute(query)
@@ -78,9 +83,9 @@ def db_statistics(db=DB):
         print "The database does not contain any restaurants in the nodes_tags table."
         
     # Count the number of restaurant ways
-    query = '''SELECT COUNT(id)
+    query = '''SELECT COUNT(*)
                FROM ways_tags
-               WHERE value='restaurant' OR value='Restaurant'
+               WHERE value LIKE "%restaurant%"
                GROUP BY id
                ;'''
     cur.execute(query)
@@ -93,7 +98,8 @@ def db_statistics(db=DB):
     # Count the number of school nodes
     query = '''SELECT COUNT(*)
                FROM nodes_tags
-               WHERE value='school'OR value='School';'''
+               WHERE value LIKE "%school%"
+               GROUP BY id;'''
     cur.execute(query)
     results = cur.fetchall()
     if results:
@@ -104,7 +110,8 @@ def db_statistics(db=DB):
     # Count the number of school ways
     query = '''SELECT COUNT(*)
                FROM ways_tags
-               WHERE value='school' OR value='School';'''
+               WHERE value LIKE "%school%"
+               GROUP BY id;'''
     cur.execute(query)
     results = cur.fetchall()
     if results:
@@ -152,8 +159,7 @@ def distribution_way_nodes(db=DB):
     cur.execute(query)
     results = cur.fetchall()
     results = [result[0] for result in results]
-    plt.figure(figsize=(5,4))
-    plt.hist(results, alpha=0.5)
+    plt.hist(results, bins=200, alpha=0.5)
     plt.title('Distribution of Number of Nodes per Way')
     plt.xlabel('Number of nodes')
     plt.ylabel('Frequency')
