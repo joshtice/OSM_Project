@@ -1,3 +1,11 @@
+# References:
+#
+# https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
+#       316820862075461/lessons/5436095827/concepts/54456296460923#
+# https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
+#       316820862075461/lessons/5436095827/concepts/54446302850923#
+
+
 import xml.etree.cElementTree as ET
 import pprint
 from collections import defaultdict

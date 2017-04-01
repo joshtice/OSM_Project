@@ -1,3 +1,6 @@
+# Reference:
+# https://gist.github.com/carlward/54ec1c91b62a5f911c42#file-sample_project-md
+
 import sqlite3
 from pprint import pprint
 import matplotlib.pyplot as plt
@@ -18,6 +21,7 @@ def db_statistics(db=DB):
     cur = conn.cursor()
     
     # Count the number of unique users in the entire OSM file
+    # Ref: https://gist.github.com/carlward/54ec1c91b62a5f911c42#file-sample_project-md
     query = '''SELECT COUNT(DISTINCT(subquery.uid))
                FROM
                    (SELECT uid FROM nodes
