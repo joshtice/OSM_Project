@@ -1,26 +1,41 @@
-# References:
-#
-# https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
-#       316820862075461/lessons/5436095827/concepts/54456296460923#
-# https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
-#       316820862075461/lessons/5436095827/concepts/54446302850923#
+# -*- coding: utf-8 -*-
+"""
+Script audit_tags.py takes a raw OpenStreetMaps XML file and audits the tag 
+elements for errors. Specifically, the script looks for:
+ - Street names that are abbreviated
+ - Tags with problematic characters (e.g., spaces)
+ - Incorrect zip codes
+ - Incorrect phone numbers
+ 
+Acknowledgments:
+https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
+      316820862075461/lessons/5436095827/concepts/54456296460923#
+https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
+      316820862075461/lessons/5436095827/concepts/54446302850923#
+"""
 
-
-import xml.etree.cElementTree as ET
-import pprint
 from collections import defaultdict
+import pprint
 import re
+import xml.etree.cElementTree as ET
 
 
 FILENAME = "Rochester.osm"
+"""str: Path to OpenStreetMaps XML file to be analyzed"""
 
-
-##########################################################################################
-#                                   HELPER FUNCTIONS                                     #
-##########################################################################################
+################################################################################
+#                              HELPER FUNCTIONS                                #
+################################################################################
 
 def print_sorted_dict(d):
-    '''Print key/value pairs from a dictionary, sorted by key'''
+    """Print key/value pairs from a dictionary, sorted by key.
+    
+    Parameters
+    ----------
+    
+    d : dict
+        A dictionary with keys of type 'str'.
+    """
     keys = d.keys()
     keys = sorted(keys, key=lambda s: s.lower())
     for k in keys:
@@ -29,7 +44,23 @@ def print_sorted_dict(d):
      
         
 def iter_elements(filename=FILENAME, tags=('node', 'way', 'relation')):
-    '''Yield element if it is a node, way, or relation'''
+    """Yield an OSM element if it is a node, way, or relation.
+    
+    Parameters
+    ----------
+        filename : str
+            A string containing the path to an OSM file. Defaults to the module 
+            level variable FILENAME.
+        tags : tuple
+            The type of tags to be yielded by the function. Defaults to nodes, 
+            ways, and relations.
+            
+    Yields
+    ------
+        xml.etree.cElementTree.Element
+            An element of the OSM file that belongs to a type identified in the 
+            parameter tags.
+    """
     context = ET.iterparse(filename, events=('start', 'end'))
     _, root = next(context)
     for event, elem in context:
@@ -39,8 +70,19 @@ def iter_elements(filename=FILENAME, tags=('node', 'way', 'relation')):
     
             
 def aggregate_tag_keys(filename=FILENAME):
-    '''Compile all the keys found in tag subelements'''
+    """Compile all the keys found in tag subelements
     
+    Parameters
+    ----------
+    filename : str
+        A string containing the path to an OSM file. Defaults to the module 
+        level variable FILENAME.
+        
+    Returns
+    -------
+    collections.defaultdict
+        A dictionary containing counts of all the tag keys in an OSM file.
+    """
     keys = defaultdict(int)
     for element in iter_elements(filename):
         for subelement in element:
@@ -50,8 +92,20 @@ def aggregate_tag_keys(filename=FILENAME):
 
 
 def categorize_tags(filename=FILENAME):
-    '''Compile all the keys that contain problem characters'''
+    """Compile all the keys that contain problem characters
     
+    Parameters
+    ----------
+    filename : str
+        A string containing the path to an OSM file. Defaults to the module 
+        level variable FILENAME.
+        
+    Returns
+    -------
+    dict
+        A dictionary containing counts of five categories of tags: (i) 'fixme', 
+        (ii) 'tiger', (iii) 'gnis', (iv) problematic characters, and (v) other.
+    """
     problem_chars = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
     key_categories = {'fixme':0, 'tiger':0, 'gnis':0, 'problem':0, 'other':0}
     keys = aggregate_tag_keys(filename)
@@ -70,8 +124,20 @@ def categorize_tags(filename=FILENAME):
 
 
 def aggregate_problem_tags(filename=FILENAME):
-    '''Compile all tags that contain problem characters'''
+    """Compile all tags that contain problem characters
     
+    Parameters
+    ----------
+    filename : str
+        A string containing the path to an OSM file. Defaults to the module 
+        level variable FILENAME.
+    
+    Returns
+    -------
+    collections.defaultdict
+        A dictionary containing counts of specific problematic keys in the OSM
+        file.
+    """
     problem_keys = defaultdict(int)
     problem_chars = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
     keys = aggregate_tag_keys(filename)
@@ -82,8 +148,20 @@ def aggregate_problem_tags(filename=FILENAME):
       
     
 def aggregate_addr_tags(filename=FILENAME):
-    '''Compile all tags that contain information related to address'''
+    """Compile all tags that contain information related to address
     
+    Parameters
+    ----------
+    filename : str
+        A string containing the path to an OSM file. Defaults to the module 
+        level variable FILENAME.
+        
+    Returns
+    -------
+    collections.defaultdict
+        A dictionary containing counts of keys that indicate an address 
+        component.
+    """
     addr_keys = defaultdict(int)
     keys = aggregate_tag_keys(filename)
     for key in keys:
@@ -93,13 +171,25 @@ def aggregate_addr_tags(filename=FILENAME):
     
     
 def aggregate_street_abbrevs(filename=FILENAME):
-    '''Compile abbreviations found in tags related to address'''
+    """Compile abbreviations found in tags related to address
     
+    Parameters
+    ----------
+    filename : str
+        A string containing the path to an OSM file. Defaults to the module 
+        level variable FILENAME.
+        
+    Returns
+    -------
+    collections.defaultdict
+        A dictionary containing counts of common street abbreviations found in
+        tags.
+    """
     streets = defaultdict(int)
     street_tag = re.compile(r'^(addr:street)\w*')
     
-    # Assume that street abbreviations, if they exist, will be the last word character at
-    # the end of the full street string
+    # Assume that street abbreviations, if they exist, will be the last word 
+    # character at the end of the full street string
     street_name = re.compile(r'\b\w+\b$')
     
     for element in iter_elements(filename):
@@ -115,8 +205,19 @@ def aggregate_street_abbrevs(filename=FILENAME):
     
     
 def aggregate_zips(filename=FILENAME):
-    '''Compile zip codes'''
+    """Compile zip codes
     
+    Parameters
+    ----------
+    filename : str
+        A string containing the path to an OSM file. Defaults to the module 
+        level variable FILENAME.
+        
+    Returns
+    -------
+    collections.defaultdict
+        A dictionary containing counts of unique zip codes in the OSM file.
+    """
     zips = defaultdict(int)
     for element in iter_elements(filename):
         for subelement in element:
@@ -128,12 +229,19 @@ def aggregate_zips(filename=FILENAME):
     return zips    
     
 
-##########################################################################################
-#                                     MAIN FUNCTION                                      #
-##########################################################################################
+################################################################################
+#                                MAIN FUNCTION                                 #
+#############################################@##################################
 
-def audit_osm_file(filename):
-
+def audit_osm_file(filename=FILENAME):
+    """Perform audit of OSM file.
+    
+    Parameters
+    ----------
+    filename : str
+        A string containing the path to an OSM file. Defaults to the module 
+        level variable FILENAME.
+    """
     keys = aggregate_tag_keys(filename)
 
     print "#################### KEYS ####################\n"
@@ -163,4 +271,4 @@ def audit_osm_file(filename):
 
 
 if __name__ == '__main__':
-    audit_osm_file(FILENAME)
+    audit_osm_file()
