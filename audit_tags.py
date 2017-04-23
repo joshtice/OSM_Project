@@ -9,9 +9,9 @@ elements for errors. Specifically, the script looks for:
  
 Acknowledgments:
 [1] https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
-      316820862075461/lessons/5436095827/concepts/54456296460923#
+    316820862075461/lessons/5436095827/concepts/54456296460923#
 [2] https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
-      316820862075461/lessons/5436095827/concepts/54446302850923#
+    316820862075461/lessons/5436095827/concepts/54446302850923#
 """
 
 from collections import defaultdict
@@ -21,7 +21,7 @@ import xml.etree.cElementTree as ET
 
 
 FILENAME = "Rochester.osm"
-"""str: Path to OpenStreetMaps XML file to be analyzed"""
+"""str: Path to OpenStreetMaps XML file to be analyzed."""
 
 ################################################################################
 #                              HELPER FUNCTIONS                                #
@@ -70,7 +70,7 @@ def iter_elements(filename=FILENAME, tags=('node', 'way', 'relation')):
     
             
 def aggregate_tag_keys(filename=FILENAME):
-    """Compile all the keys found in tag subelements
+    """Compile all the keys found in tag subelements.
     
     Parameters
     ----------
@@ -92,7 +92,7 @@ def aggregate_tag_keys(filename=FILENAME):
 
 
 def categorize_tags(filename=FILENAME):
-    """Compile all the keys that contain problem characters
+    """Compile all the keys that contain problem characters.
     
     Parameters
     ----------
@@ -124,7 +124,7 @@ def categorize_tags(filename=FILENAME):
 
 
 def aggregate_problem_tags(filename=FILENAME):
-    """Compile all tags that contain problem characters
+    """Compile all tags that contain problem characters.
     
     Parameters
     ----------
@@ -148,7 +148,7 @@ def aggregate_problem_tags(filename=FILENAME):
       
     
 def aggregate_addr_tags(filename=FILENAME):
-    """Compile all tags that contain information related to address
+    """Compile all tags that contain information related to address.
     
     Parameters
     ----------
@@ -171,7 +171,7 @@ def aggregate_addr_tags(filename=FILENAME):
     
     
 def aggregate_street_abbrevs(filename=FILENAME):
-    """Compile abbreviations found in tags related to address
+    """Compile abbreviations found in tags related to address.
     
     Parameters
     ----------
@@ -205,7 +205,7 @@ def aggregate_street_abbrevs(filename=FILENAME):
 
 
 def aggregate_cities(filename=FILENAME):
-    """Compile city names
+    """Compile city names.
     
     Parameters
     ----------
@@ -230,7 +230,7 @@ def aggregate_cities(filename=FILENAME):
         
     
 def aggregate_zips(filename=FILENAME):
-    """Compile zip codes
+    """Compile zip codes.
     
     Parameters
     ----------
@@ -255,7 +255,7 @@ def aggregate_zips(filename=FILENAME):
     
 
 def aggregate_phone_numbers(filename=FILENAME):
-    """Compile city names
+    """Compile city names.
     
     Parameters
     ----------
