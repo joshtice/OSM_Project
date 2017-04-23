@@ -2,15 +2,15 @@
 """
 Script audit_tags.py takes a raw OpenStreetMaps XML file and audits the tag 
 elements for errors. Specifically, the script looks for:
- - Street names that are abbreviated
  - Tags with problematic characters (e.g., spaces)
+ - Street names that are abbreviated
  - Incorrect zip codes
  - Incorrect phone numbers
  
 Acknowledgments:
-https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
+[1] https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
       316820862075461/lessons/5436095827/concepts/54456296460923#
-https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
+[2] https://classroom.udacity.com/nanodegrees/nd002/parts/0021345404/modules/
       316820862075461/lessons/5436095827/concepts/54446302850923#
 """
 
@@ -202,7 +202,32 @@ def aggregate_street_abbrevs(filename=FILENAME):
                     if street:
                         streets[street.group()] += 1
     return streets
+
+
+def aggregate_cities(filename=FILENAME):
+    """Compile city names
     
+    Parameters
+    ----------
+    filename : str
+        A string containing the path to an OSM file. Defaults to the module 
+        level variable FILENAME.
+        
+    Returns
+    -------
+    collections.defaultdict
+        A dictionary containing counts of unique city names in the OSM file.
+    """
+    cities = defaultdict(int)
+    for element in iter_elements(filename):
+        for subelement in element:
+            if subelement.tag == 'tag' \
+            and ('k' in subelement.attrib) \
+            and (subelement.get('k') == 'addr:city'):
+                key = subelement.get('v')
+                cities[key] += 1
+    return cities    
+        
     
 def aggregate_zips(filename=FILENAME):
     """Compile zip codes
@@ -229,6 +254,31 @@ def aggregate_zips(filename=FILENAME):
     return zips    
     
 
+def aggregate_phone_numbers(filename=FILENAME):
+    """Compile city names
+    
+    Parameters
+    ----------
+    filename : str
+        A string containing the path to an OSM file. Defaults to the module 
+        level variable FILENAME.
+        
+    Returns
+    -------
+    collections.defaultdict
+        A dictionary containing counts of unique phone numbers in the OSM file.
+    """
+    phone_numbers = defaultdict(int)
+    for element in iter_elements(filename):
+        for subelement in element:
+            if subelement.tag == 'tag' \
+            and ('k' in subelement.attrib) \
+            and ('phone' in subelement.get('k')):
+                key = subelement.get('v')
+                phone_numbers[key] += 1
+    return phone_numbers
+    
+
 ################################################################################
 #                                MAIN FUNCTION                                 #
 #############################################@##################################
@@ -244,30 +294,37 @@ def audit_osm_file(filename=FILENAME):
     """
     keys = aggregate_tag_keys(filename)
 
-    print "#################### KEYS ####################\n"
+    print "#################### KEYS ####################"
     print "Total unique keys: ", len(keys)
     print_sorted_dict(keys)
 
-    print "\n\n"
-    print "############### KEY CATEGORIES ###############\n"
+    print "\n"
+    print "############### KEY CATEGORIES ###############"
     print_sorted_dict(categorize_tags(filename))
 
-    print "\n\n"
-    print "################ PROBLEM KEYS ################\n"
+    print "\n"
+    print "################ PROBLEM KEYS ################"
     print_sorted_dict(aggregate_problem_tags(filename))
 
-    print "\n\n"
-    print "########## KEYS RELATED TO ADDRESS ###########\n"
+    print "\n"
+    print "########## KEYS RELATED TO ADDRESS ###########"
     print_sorted_dict(aggregate_addr_tags(filename))
 
-    print "\n\n"
-    print "############ STREET ABBREVIATIONS ############\n"
+    print "\n"
+    print "############ STREET ABBREVIATIONS ############"
     print_sorted_dict(aggregate_street_abbrevs(filename))
+    
+    print "\n"
+    print "################### CITIES ###################"
+    print_sorted_dict(aggregate_cities(filename))
 
-    print "\n\n"
-    print "################# ZIP CODES ##################\n"
-    print ""
+    print "\n"
+    print "################# ZIP CODES ##################"
     print_sorted_dict(aggregate_zips(filename))
+    
+    print "\n"
+    print "################# ZIP CODES ##################"
+    print_sorted_dict(aggregate_phone_numbers(filename))
 
 
 if __name__ == '__main__':
