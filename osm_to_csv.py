@@ -149,12 +149,12 @@ def fix_cities(city):
     """
     mapping = {
         'East Rochester Town': 'East Rochester',
-        'Rochester, NY': 'Rochester',
+        'Rochester, Ny': 'Rochester',
         'Rochestet': 'Rochester',
         'W Commercial St': 'East Rochester'
     }
     
-    city = city.capitalize()
+    city = city.title()
     if city in mapping:
         city = mapping[city]
     return city
