@@ -1,9 +1,6 @@
 The components of the OpenStreetMap project submission are distributed as follows:
 
-OpenStreetMap_Project.ipynb
-- Jupyter notebook used to generate OpenStreetMap_Project.html
-
-OpenStreetMap_Project.md
+OpenStreetMap_Project.html
 - Answers to the rubric questions; Documentation of the data wrangling process
 - Link to the map position, short description of the area, reason for the choice
 
