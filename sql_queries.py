@@ -118,23 +118,11 @@ def distribution_way_nodes(db=DB):
                    (SELECT COUNT(node_id) AS num
                     FROM ways_nodes
                     GROUP BY id)
-               AS subquery;'''
+                   AS subquery;'''
     
     cur.execute(query)
     results = cur.fetchall()
     print "Average nodes associated with each way: %d" % results[0]
-
-    # Query the top 20 ways with the highest number of associated nodes
-    query = '''SELECT id, COUNT(node_id) AS num
-			   FROM ways_nodes
-			   GROUP BY id
-			   ORDER BY num DESC
-			   LIMIT 20;'''
-    cur.execute(query)
-    results = cur.fetchall()
-    print 'WAY ID|NODE COUNT'
-    for (way_id, node_count) in results:
-        print "%s|%d" % (way_id, node_count)
 
     # Plot a histogram of the distribution of number of nodes per way
     query = '''SELECT COUNT(node_id) AS num
@@ -171,7 +159,8 @@ def describe_large_ways(db=DB):
 					FROM ways_nodes
 					GROUP BY id
 					ORDER BY num DESC
-					LIMIT 20) AS subquery
+					LIMIT 20)
+			       AS subquery
 			   JOIN ways_tags
 			   ON subquery.id=ways_tags.id
 			   ORDER BY num DESC
